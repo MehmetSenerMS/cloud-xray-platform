@@ -4,6 +4,7 @@ from jose import JWTError
 
 from models import SaveTransactionRequest
 from app.services.jwt_service import verify_token
+from app.services.s3_service import upload_image_to_s3
 from app.services.dynamodb_service import (
     save_transaction_to_dynamodb,
     get_transactions_by_user
@@ -26,17 +27,26 @@ def save_transaction(
     try:
         token = credentials.credentials
         payload = verify_token(token)
+
         user_id = payload.get("sub")
+
+        image_s3_key = upload_image_to_s3(
+            base64_image=request.image_base64,
+            user_id=user_id,
+            transaction_id=request.transaction_id
+        )
 
         transaction_record = {
             "user_id": user_id,
             "transaction_id": request.transaction_id,
             "transaction_date": request.transaction_date,
-            "image_base64": request.image_base64,
+            "image_s3_key": image_s3_key,
             "result": request.result
         }
 
-        saved_transaction = save_transaction_to_dynamodb(transaction_record)
+        saved_transaction = save_transaction_to_dynamodb(
+            transaction_record
+        )
 
         return {
             "message": "Transaction saved successfully",
@@ -44,10 +54,16 @@ def save_transaction(
         }
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 
 @router.get("/history")
@@ -57,6 +73,7 @@ def get_transaction_history(
     try:
         token = credentials.credentials
         payload = verify_token(token)
+
         user_id = payload.get("sub")
 
         user_transactions = get_transactions_by_user(user_id)
@@ -68,7 +85,13 @@ def get_transaction_history(
         }
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
