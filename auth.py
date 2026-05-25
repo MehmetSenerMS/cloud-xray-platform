@@ -27,6 +27,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_user(full_name: str, email: str, password: str):
+    email = email.lower().strip()
+
     existing_user = get_user_by_email(email)
 
     if existing_user:
@@ -49,8 +51,9 @@ def create_user(full_name: str, email: str, password: str):
 
     return user_record
 
-
 def authenticate_user(email: str, password: str):
+    email = email.lower().strip()
+
     user = get_user_by_email(email)
 
     if not user:
