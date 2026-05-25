@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-jose
+passlib
+bcrypt
+torch
+torchvision
+pillow
+python-multipart
+sqlalchemy
+boto3
