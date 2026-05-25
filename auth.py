@@ -1,16 +1,18 @@
 from passlib.context import CryptContext
 import uuid
 
+from app.utils.helpers import get_current_utc_datetime
+from app.services.dynamodb_service import (
+    USER_PROFILE_SORT_KEY,
+    save_user_profile,
+    get_user_by_email
+)
+
 
 pwd_context = CryptContext(
     schemes=["pbkdf2_sha256"],
     deprecated="auto"
 )
-
-
-# Temporary in-memory user storage
-# Later we will replace this with DynamoDB
-fake_users_db = {}
 
 
 def hash_password(password: str) -> str:
@@ -25,29 +27,31 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_user(full_name: str, email: str, password: str):
-    
-    if email in fake_users_db:
+    existing_user = get_user_by_email(email)
+
+    if existing_user:
         return None
 
     user_id = str(uuid.uuid4())
-
     hashed_password = hash_password(password)
 
-    user_data = {
+    user_record = {
         "user_id": user_id,
-        "full_name": full_name,
+        "transaction_id": USER_PROFILE_SORT_KEY,
+        "record_type": "USER",
         "email": email,
-        "hashed_password": hashed_password
+        "full_name": full_name,
+        "hashed_password": hashed_password,
+        "created_at": get_current_utc_datetime()
     }
 
-    fake_users_db[email] = user_data
+    save_user_profile(user_record)
 
-    return user_data
+    return user_record
 
 
 def authenticate_user(email: str, password: str):
-
-    user = fake_users_db.get(email)
+    user = get_user_by_email(email)
 
     if not user:
         return None
