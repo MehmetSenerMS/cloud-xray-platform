@@ -42,3 +42,14 @@ def generate_presigned_image_url(
         },
         ExpiresIn=expires_in
     )
+
+def delete_image_from_s3(image_s3_key: str):
+    s3_client.delete_object(
+        Bucket=S3_BUCKET,
+        Key=image_s3_key
+    )
+
+    return {
+        "deleted": True,
+        "image_s3_key": image_s3_key
+    }

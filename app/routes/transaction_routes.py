@@ -6,12 +6,14 @@ from models import SaveTransactionRequest
 from app.services.jwt_service import verify_token
 from app.services.s3_service import (
     upload_image_to_s3,
-    generate_presigned_image_url
+    generate_presigned_image_url,
+    delete_image_from_s3
 )
 from app.services.dynamodb_service import (
     save_transaction_to_dynamodb,
     get_transactions_by_user,
-    get_transaction_by_id
+    get_transaction_by_id,
+    delete_transaction_from_dynamodb
 )
 
 
@@ -138,6 +140,58 @@ def get_transaction_image_url(
             "transaction_id": transaction_id,
             "image_s3_key": image_s3_key,
             "image_url": image_url
+        }
+
+    except JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+@router.delete("/{transaction_id}")
+def delete_transaction(
+    transaction_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    try:
+        token = credentials.credentials
+        payload = verify_token(token)
+
+        user_id = payload.get("sub")
+
+        transaction = get_transaction_by_id(
+            user_id=user_id,
+            transaction_id=transaction_id
+        )
+
+        if transaction is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Transaction not found"
+            )
+
+        image_s3_key = transaction.get("image_s3_key")
+
+        if image_s3_key:
+            delete_image_from_s3(image_s3_key)
+
+        deleted_transaction = delete_transaction_from_dynamodb(
+            user_id=user_id,
+            transaction_id=transaction_id
+        )
+
+        return {
+            "message": "Transaction deleted successfully",
+            "deleted_transaction": deleted_transaction
         }
 
     except JWTError:

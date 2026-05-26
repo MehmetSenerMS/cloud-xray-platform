@@ -117,3 +117,19 @@ def get_transaction_by_id(user_id: str, transaction_id: str):
         return None
 
     return convert_decimal_to_native(item)
+
+def delete_transaction_from_dynamodb(user_id: str, transaction_id: str):
+    response = table.delete_item(
+        Key={
+            "user_id": user_id,
+            "transaction_id": transaction_id
+        },
+        ReturnValues="ALL_OLD"
+    )
+
+    deleted_item = response.get("Attributes")
+
+    if deleted_item is None:
+        return None
+
+    return convert_decimal_to_native(deleted_item)
