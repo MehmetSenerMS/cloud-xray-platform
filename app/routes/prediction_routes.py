@@ -1,5 +1,5 @@
 import time
-
+from app.services.cloudwatch_service import put_metric
 from app.utils.logger import logger
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -46,6 +46,12 @@ def predict(
             f"transaction_id={transaction_id} | "
             f"duration={prediction_duration}s"
         )
+        
+        put_metric(
+            metric_name="InferenceDuration",
+            value=prediction_duration,
+            unit="Seconds"
+            )
 
         return {
             "transaction_id": transaction_id,
