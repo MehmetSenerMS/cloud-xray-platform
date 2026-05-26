@@ -43,7 +43,8 @@ class SaveTransactionRequest(BaseModel):
     transaction_id: str
     transaction_date: str
     image_base64: str
-    result: Dict[str, Any]
+    prediction_result: Dict[str, Any]
+    inference_duration_seconds: Optional[float] = None
 
 
 class TransactionResponse(BaseModel):

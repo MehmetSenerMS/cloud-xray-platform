@@ -47,7 +47,8 @@ def save_transaction(
             "transaction_id": request.transaction_id,
             "transaction_date": request.transaction_date,
             "image_s3_key": image_s3_key,
-            "result": request.result
+            "prediction_result": request.prediction_result,
+            "inference_duration_seconds": request.inference_duration_seconds
         }
 
         saved_transaction = save_transaction_to_dynamodb(
