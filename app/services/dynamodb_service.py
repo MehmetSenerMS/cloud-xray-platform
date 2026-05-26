@@ -102,3 +102,18 @@ def get_transactions_by_user(user_id: str):
     ]
 
     return convert_decimal_to_native(transactions)
+
+def get_transaction_by_id(user_id: str, transaction_id: str):
+    response = table.get_item(
+        Key={
+            "user_id": user_id,
+            "transaction_id": transaction_id
+        }
+    )
+
+    item = response.get("Item")
+
+    if item is None:
+        return None
+
+    return convert_decimal_to_native(item)

@@ -28,3 +28,17 @@ def upload_image_to_s3(
     )
 
     return image_s3_key
+
+
+def generate_presigned_image_url(
+    image_s3_key: str,
+    expires_in: int = 600
+) -> str:
+    return s3_client.generate_presigned_url(
+        ClientMethod="get_object",
+        Params={
+            "Bucket": S3_BUCKET,
+            "Key": image_s3_key
+        },
+        ExpiresIn=expires_in
+    )
