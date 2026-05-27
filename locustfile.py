@@ -20,7 +20,7 @@ class CloudXRayPredictUser(HttpUser):
             "Content-Type": "application/json"
         }
 
-        with open("predict_payload.json", "r") as f:
+        with open("/mnt/locust/predict_payload.json", "r") as f:
             self.predict_payload = json.load(f)
 
     @task
