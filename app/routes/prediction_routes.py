@@ -10,6 +10,9 @@ from app.services.prediction_service import run_prediction
 from app.services.jwt_service import verify_token
 from app.utils.helpers import generate_transaction_id, get_current_utc_datetime
 
+from app.services.dynamodb_service import save_transaction_to_dynamodb
+from app.services.s3_service import upload_image_to_s3
+
 router = APIRouter(
     prefix="/prediction",
     tags=["Prediction"]
@@ -36,6 +39,26 @@ def predict(
 
         transaction_id = generate_transaction_id()
         transaction_date = get_current_utc_datetime()
+
+        end_time = time.time()
+        prediction_duration = round(end_time - start_time, 4)
+
+        image_s3_key = upload_image_to_s3(
+            base64_image=request.image_base64,
+            user_id=user_id,
+            transaction_id=transaction_id
+            )
+
+        transaction_record = {
+            "user_id": user_id,
+            "transaction_id": transaction_id,
+            "transaction_date": transaction_date,
+            "image_s3_key": image_s3_key,
+            "prediction_result": prediction_result,
+            "inference_duration_seconds": prediction_duration
+            }
+
+        save_transaction_to_dynamodb(transaction_record)
 
         end_time = time.time()
         prediction_duration = round(end_time - start_time, 4)
