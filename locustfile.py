@@ -1,7 +1,8 @@
 from locust import HttpUser, task, between
+import json
 
 
-class CloudXRayUser(HttpUser):
+class CloudXRayPredictUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
@@ -12,17 +13,20 @@ class CloudXRayUser(HttpUser):
                 "password": "GiresunKesap28*"
             }
         )
-
         token_data = response.json()
-        self.access_token = token_data["access_token"]
 
         self.headers = {
-            "Authorization": f"Bearer {self.access_token}"
+            "Authorization": f"Bearer {token_data['access_token']}",
+            "Content-Type": "application/json"
         }
 
+        with open("predict_payload.json", "r") as f:
+            self.predict_payload = json.load(f)
+
     @task
-    def get_transaction_history(self):
-        self.client.get(
-            "/transactions/history",
+    def predict(self):
+        self.client.post(
+            "/predict",
+            json=self.predict_payload,
             headers=self.headers
         )
