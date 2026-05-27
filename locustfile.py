@@ -26,7 +26,7 @@ class CloudXRayPredictUser(HttpUser):
     @task
     def predict(self):
         self.client.post(
-            "/predict",
+            "/prediction/predict",
             json=self.predict_payload,
             headers=self.headers
         )
