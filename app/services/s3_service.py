@@ -1,5 +1,9 @@
+
+# import packages
 import base64
 import boto3
+
+
 
 
 S3_BUCKET = "cloud-xray-images-msmes"
