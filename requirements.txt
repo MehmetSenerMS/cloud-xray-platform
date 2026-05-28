@@ -10,3 +10,4 @@ python-multipart
 sqlalchemy
 boto3
 email-validator
+gunicorn
