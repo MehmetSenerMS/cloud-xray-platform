@@ -13,6 +13,17 @@ class CloudXRayPredictUser(HttpUser):
                 "password": "GiresunKesap28*"
             }
         )
+        
+        if response.status_code != 200:
+            print("LOGIN FAILED:", response.status_code, response.text[:300])
+            return
+
+        try:
+            token_data = response.json()
+        except Exception:
+            print("LOGIN NON-JSON RESPONSE:", response.status_code, response.text[:300])
+            return
+        
         token_data = response.json()
 
         self.headers = {
