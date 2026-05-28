@@ -5,6 +5,7 @@ uvicorn
 python-jose
 passlib
 bcrypt
+numpy==1.26.4
 torch==2.2.2+cpu
 torchvision==0.17.2+cpu
 pillow
